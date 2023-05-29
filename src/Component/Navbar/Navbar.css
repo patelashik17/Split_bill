@@ -1,0 +1,9 @@
+.navbar_heading {
+    background-color: #1976d2;
+    height: 9vh;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}

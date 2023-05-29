@@ -1,0 +1,59 @@
+.MuiBox-root {
+    background-color: white !important;
+}
+
+.Landing-box {
+    max-height: 100vh;
+    max-width: 100vh;
+    height: 30rem;
+    width: 30rem;
+    background-color: aquamarine;
+}
+
+.box {
+    background-color: white;
+}
+
+.class_table {
+    max-width: 100%;
+    width: 20rem;
+    margin: 1rem auto;
+    border-radius: 2rem;
+    border: 1rem hidden #443C68;
+    border-collapse: collapse;
+    box-shadow: 0 0 0 1px black;
+    overflow: hidden;
+}
+
+/* table {
+    margin: 1rem auto;
+    border-radius: 2rem;
+    border: 1rem hidden #443C68;
+    border-collapse: collapse;
+    box-shadow: 0 0 <div class="MuiBox-root css-1ybqwhs" tabindex="-1">0 1px black;
+    overflow: hidden;
+    max-width: 80rem;
+} */
+
+td {
+    font-size: 1.6rem;
+    line-height: 1.6;
+}
+
+thead {
+    font-size: 1.2rem;
+    background-color: #443C68;
+    color: #fff;
+}
+
+th,
+td {
+    border: 1px solid #443C68;
+    min-width: 11rem;
+    padding: 1.5rem;
+    line-height: 0.1;
+}
+
+td {
+    font-size: 1.4rem;
+}
