@@ -6,7 +6,6 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { useState } from "react";
 import GroupForm from "../GroupDetailForm/GroupForm";
-import { useNavigate } from "react-router-dom";
 
 const validationSchema = yup.object({
   email: yup
@@ -21,7 +20,6 @@ const validationSchema = yup.object({
 
 const Login = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -31,7 +29,8 @@ const Login = () => {
     validationSchema: validationSchema,
     onSubmit: (values) => {
       setIsSubmitted(true);
-      localStorage.setItem("token", true);
+      const maths=Math.floor(Math.random()*10000);
+      localStorage.setItem("token",maths);
     },
   });
 
@@ -40,13 +39,13 @@ const Login = () => {
   ) : (
     <div className="login">
       <form onSubmit={formik.handleSubmit}>
-        <div className="loginForm">
+        <div className="loginform">
           <h1>Login Page</h1>
 
           <TextField
             id="email"
             label="Enter Email"
-            className="inputEmail"
+            className="inputemail"
             value={formik.values.email}
             onChange={formik.handleChange}
             error={formik.touched.email && Boolean(formik.errors.email)}
@@ -58,7 +57,7 @@ const Login = () => {
             label="Password"
             type="password"
             autoComplete="current-password"
-            className="inputPassword"
+            className="inputpassword"
             sx={{ marginTop: 2 }}
             value={formik.values.password}
             onChange={formik.handleChange}
@@ -68,7 +67,7 @@ const Login = () => {
 
           <Button
             variant="contained"
-            className="loginBtn"
+            className="loginbtn"
             sx={{ marginTop: 3 }}
             type="submit"
           >

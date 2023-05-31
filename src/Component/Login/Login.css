@@ -12,11 +12,7 @@
     background-color: #f5f5f5;
 }
 
-.logo_gif {
-    margin-top: 5rem;
-}
-
-.loginForm {
+.loginform {
     max-height: 100vh;
     max-width: 100%;
     background-color: #ffffff;
@@ -28,19 +24,18 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    /* margin-left: 37rem; */
     margin-top: 5rem;
 }
 
-.inputEmail {
+.inputemail {
     width: 24rem;
 }
 
-.inputPassword {
+.inputpassword {
     margin-top: 1rem;
     width: 24rem;
 }
 
-.loginBtn {
+.loginbtn {
     margin-top: 10px;
 }

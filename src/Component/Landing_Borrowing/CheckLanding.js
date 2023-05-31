@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import "./CheckLanding.css";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
+import AccountMenu from "../Account_Menu/account_menu";
 
 const Landing = () => {
   const [friendList, setFriendList] = useState([]);
   const [userBalances, setUserBalances] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [whoPaidWho, setWhoPaidWho] = useState([]);
 
   useEffect(() => {
     fetchFriendList();
@@ -38,38 +40,88 @@ const Landing = () => {
       return;
     }
 
-    const userBalances = [];
+    const updatedUserBalances = [];
 
     friendList.forEach((friend) => {
       const inputAmount = parseInt(friend.inputAmount);
       if (!isNaN(inputAmount)) {
         const selectedOption = friend.selectedOption;
-        const givenAmount = userBalances.find(
+        const givenAmount = updatedUserBalances.find(
           (balance) => balance.name === selectedOption
         );
         if (givenAmount) {
           givenAmount.amount += inputAmount;
         } else {
-          userBalances.push({ name: selectedOption, amount: inputAmount });
+          updatedUserBalances.push({
+            name: selectedOption,
+            amount: inputAmount,
+          });
         }
       }
     });
 
-    const totalAmount = userBalances.reduce(
+    const totalAmount = updatedUserBalances.reduce(
       (total, balance) => total + balance.amount,
       0
     );
-    const averageAmount = totalAmount / userBalances.length;
+    const averageAmount = totalAmount / updatedUserBalances.length;
 
-    userBalances.forEach((balance) => {
+    updatedUserBalances.forEach((balance) => {
       balance.receivedAmount = balance.amount - averageAmount;
     });
 
-    setUserBalances(userBalances);
+    setUserBalances(updatedUserBalances);
+    console.log("console", updatedUserBalances);
+    let updatedWhoPaidWho = [];
+
+    let remainingAmount;
+    let loopCount = 0;
+    const maxLoopCount = 100;
+
+    do {
+      remainingAmount = Math.abs(
+        Math.max(...updatedUserBalances.map((item) => item.receivedAmount))
+      );
+
+      if (remainingAmount !== 0 && loopCount < maxLoopCount) {
+        let sorted = [...updatedUserBalances].sort(
+          (a, b) => a.receivedAmount - b.receivedAmount
+        );
+        let debtor = sorted[0];
+        let creditor = sorted[sorted.length - 1];
+
+        let amountToSettle = Math.min(
+          Math.abs(debtor.receivedAmount),
+          Math.abs(creditor.receivedAmount)
+        );
+
+        updatedWhoPaidWho.push(
+          debtor.name +
+            " should give to " +
+            creditor.name +
+            " this much: " +
+            Math.floor(amountToSettle)
+        );
+
+        debtor.receivedAmount += amountToSettle;
+        creditor.receivedAmount -= amountToSettle;
+
+        loopCount++;
+      }
+    } while (remainingAmount !== 0 && loopCount < maxLoopCount);
+
+    if (loopCount >= maxLoopCount) {
+      console.log(
+        "Loop limit reached. Balances could not be settled completely."
+      );
+    }
+    console.log("Who Paid Who:", updatedWhoPaidWho);
+    setWhoPaidWho(updatedWhoPaidWho);
   }, [friendList]);
 
   return (
     <>
+      <AccountMenu />
       <div className="box">
         <center>
           <h3 className="divided">Divided Expense</h3>
@@ -94,6 +146,11 @@ const Landing = () => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="mini_box">
+        {whoPaidWho.map((result, index) => (
+          <p key={index}>{result}</p>
+        ))}
       </div>
       <Backdrop open={loading} style={{ zIndex: 999 }}>
         <CircularProgress color="inherit" />

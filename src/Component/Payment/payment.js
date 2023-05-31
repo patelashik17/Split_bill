@@ -1,81 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import TextField from "@mui/material/TextField";
-import FilledInput from "@mui/material/FilledInput";
-import InputLabel from "@mui/material/InputLabel";
-import InputAdornment from "@mui/material/InputAdornment";
-import FormControl from "@mui/material/FormControl";
 import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
-import "./payment.css";
-
-import { useSnackbar } from "notistack";
-import Navbar from "../Navbar/Navbar";
-import { useNavigate } from "react-router-dom";
+import "./payment.css";   
+import AccountMenu from "../Account_Menu/account_menu";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import Box from "@mui/material/Box";
 
 const url = "https://split-bill-e6dd6-default-rtdb.firebaseio.com/split.json";
 
 const Payment = () => {
-  const [loading, setLoading] = useState(true);
   const [childList, setChildList] = useState([]);
-  const [friendList, setFriendList] = useState([]);
-  const [selectedOption, setSelectedOption] = useState();
+  const [selectedOption, setSelectedOption] = useState("");
   const [inputTitle, setInputTitle] = useState("");
   const [inputAmount, setInputAmount] = useState("");
-  const [user, setUser] = useState([]);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(false);
-  const [paymentCount, setPaymentCount] = useState(0);
-
-  const navigate = useNavigate();
-  const [state, setState] = React.useState({
-    open: false,
-    vertical: "top",
-    horizontal: "center",
-  });
-  const { vertical, horizontal, open } = state;
-
-  const handleClick = (newState) => () => {
-    setState({ open: true, ...newState });
-  };
-
-  const handleClose = () => {
-    setState({ ...state, open: false });
-  };
+  const [errorMessage, setErrorMessage] = useState(false); 
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const handleHistoryButtonClick = () => {
-    navigate("/history");
-  };
-  const fetchData = async () => {
+  const fetchData = useCallback (async () => {
     try {
       const response = await fetch(url);
-
       const data = await response.json();
       console.log(data);
       if (data) {
         const childValue = data[Object.keys(data)[0]];
         console.log(childValue);
         setChildList(childValue.friendsList);
-        const childArray = Object.entries(childValue).map(([key, value]) => {});
-        setFriendList(childArray);
-
-        // Update the paymentCount state
-        const count = Object.entries(childValue).filter(
-          ([key, value]) => key !== "friendsList"
-        ).length;
-        setPaymentCount(count);
       } else {
         console.log("No data found");
       }
-    } catch (error) {
+    } catch (error) {     
       console.log("Error fetching data:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  },[childList]);
+
+  const memoizeFetchData=useMemo(()=>fetchData,[fetchData]);
 
   const handleDropdown = (event) => {
     setSelectedOption(event.target.value);
@@ -90,22 +56,26 @@ const Payment = () => {
   };
 
   const addPaymentValue = async (event) => {
-    event.preventDefault(); // Prevent default form submission behavior
+    event.preventDefault();
 
     if (
       inputTitle.trim() === "" ||
       inputAmount.trim() === "" ||
       !selectedOption
     ) {
-      // If any of the required fields are empty, display an error message
-      setErrorMessage("Please fill in all the fields.");
+      setErrorMessage(true);
+      setIsSuccess(false);
       return;
     }
 
     try {
       const response = await fetch(url, {
         method: "POST",
-        body: JSON.stringify({ inputTitle, inputAmount, selectedOption }),
+        body: JSON.stringify({
+          inputTitle,
+          inputAmount,
+          selectedOption,
+        }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -114,45 +84,51 @@ const Payment = () => {
       if (data) {
         const newUser = {
           id: data.id,
-          inputTitle,
+          inputTitle,  
           inputAmount,
           selectedOption,
         };
-        setUser((prevUser) => [...prevUser, newUser]);
         setInputTitle("");
-        setInputAmount("");
-        setIsSuccess(true);
+        setInputAmount("");    
+        setSelectedOption("");
+        setIsSuccess(true);  
+        setErrorMessage(false);
       }
-    } catch (error) {
+    } catch (error) {  
       console.error(error);
     }
   };
 
   return (
     <div>
-      <Navbar />
-      <div className="allDisplay">
-        <form className="paymentForm" onSubmit={addPaymentValue}>
+      <AccountMenu />
+      <div className="alldisplay">
+        <form className="paymentform" onSubmit={addPaymentValue}>
           <div>
             <p className="payer">Payer</p>
-            <select
-              className="dropdown"
-              name="option"
-              id="option"
-              onChange={handleDropdown}
-              required
-            >
-              <option value="">select one</option>
-              {childList.length > 0 &&
-                childList.map((friend) => (
-                  <option key={friend} value={friend}>
-                    {friend}
-                  </option>
-                ))}
-            </select>
+            <Box sx={{ minWidth: 120, backgroundColor: "white", ml: "-6rem" }}>
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Name</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  value={selectedOption}
+                  label="Name"
+                  name="option"
+                  id="option"
+                  onChange={handleDropdown}
+                >
+                  {childList.length > 0 &&
+                    childList.map((friend) => (
+                      <MenuItem key={friend} value={friend}>
+                        {friend}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </Box>
           </div>
           <div>
-            <p className="paymentTitle">Payment Title</p>
+            <p className="paymenttitle">Payment Title</p>
             <TextField
               id="outlined-basic"
               label="Title"
@@ -160,58 +136,27 @@ const Payment = () => {
               value={inputTitle}
               onChange={handleInputTitle}
               sx={{ mt: 2 }}
-              required
             />
           </div>
           <div>
-            <p className="paymentPrice">Price</p>
-            <FormControl
-              fullWidth
-              sx={{ m: 1, ml: 3 }}
-              variant="filled"
-              required
-            >
-              <InputLabel htmlFor="filled-adornment-amount">Amount</InputLabel>
-              <FilledInput
-                id="filled-adornment-amount"
-                value={inputAmount}
-                onChange={handleInputAmount}
-                startAdornment={
-                  <InputAdornment position="start">(₹)</InputAdornment>
-                }
-              />
-            </FormControl>
+            <p className="paymentprice">Price</p>
+            <TextField
+              sx={{ m: 1 }}
+              id="outlined-basic"
+              label="Amount"
+              onChange={handleInputAmount}
+              value={inputAmount}
+              variant="outlined"
+            />
           </div>
           <div>
+            {errorMessage && <p className="errormsg">Fills are fields</p>}
             <Button
               variant="contained"
-              color="success"
               type="submit"
-              onClick={() => {
-                if (
-                  inputTitle.trim() === "" ||
-                  inputAmount.trim() === "" ||
-                  !selectedOption
-                ) {
-                  setErrorMessage("Please fill in all the fields.");
-                } else {
-                  handleClick({
-                    vertical: "top",
-                    horizontal: "center",
-                  })();
-                }
-              }}
-              sx={{ mt: 5, ml: "3rem" }}
+              sx={{ mt: 5 }}
             >
               Payment
-            </Button>
-            <Button
-              variant="contained"
-              className="History_btn"
-              onClick={handleHistoryButtonClick}
-              sx={{ mt: 5, ml: "2rem" }}
-            >
-              Show History
             </Button>
             {isSuccess && (
               <Snackbar

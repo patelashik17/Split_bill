@@ -1,13 +1,8 @@
-import React, { useEffect, useState } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Modal from "@mui/material/Modal";
-import Button from "@mui/material/Button";
+import React, { useCallback, useEffect, useState } from "react";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
-import CheckLanding from "./CheckLanding";
 import "./History.css";
-import Navbar from "../Navbar/Navbar";
+import AccountMenu from "../Account_Menu/account_menu";
 
 const style = {
   position: "absolute",
@@ -22,12 +17,11 @@ const style = {
   borderRadius: "30px",
 };
 
+const url="https://split-bill-e6dd6-default-rtdb.firebaseio.com/split.json";
+
 const History = () => {
   const [users, setUsers] = useState({});
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
 
   useEffect(() => {
     fetchUser();
@@ -35,9 +29,7 @@ const History = () => {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch(
-        "https://split-bill-e6dd6-default-rtdb.firebaseio.com/split.json"
-      );
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -54,7 +46,7 @@ const History = () => {
   };
 
   const totalAmount = () => {
-    if (Object.keys(users).length === 0) {
+    if (setUsers === 0) {
       return 0;
     }
     let sum = 0;
@@ -69,35 +61,19 @@ const History = () => {
 
   return (
     <div>
-      <Navbar />
-      <div>
-        <Button onClick={handleOpen} className="check" variant="contained">
-          Calculate All Total
-        </Button>
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              <CheckLanding />
-            </Typography>
-          </Box>
-        </Modal>
-      </div>
-      <div className="history">
+      <AccountMenu />
+      
+      <div className="history">     
         {loading && (
           <Backdrop open={loading}>
             <CircularProgress color="inherit" />
           </Backdrop>
         )}
         <form>
-          <div className="historyTable">
-            <h2 className="title_history">Transaction History</h2>
+          <div className="historytable">
+            <h2 className="titlehistory">Transaction History</h2>
             <b>
-              <h3 className="totalAmount">Total Expense: {totalAmount()}</h3>
+              <h3 className="totalamount">Total Expense: {totalAmount()}</h3>
             </b>
             <table>
               <thead>
@@ -109,9 +85,9 @@ const History = () => {
               </thead>
               <tbody>
                 {Object.values(users).map((curUser, index) => {
-                  if (index > 0) {
+                  if (index > 0) {    
                     return (
-                      <tr key={index} className="row">
+                      <tr key={index}>
                         <td>{curUser.selectedOption}</td>
                         <td>{curUser.inputTitle}</td>
                         <td>{curUser.inputAmount}</td>

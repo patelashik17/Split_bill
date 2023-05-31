@@ -6,7 +6,7 @@ import Chip from "@mui/material/Chip";
 import "./GroupForm.css";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
-import Navbar from "../Navbar/Navbar";
+import AccountMenu from "../Account_Menu/account_menu";
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -25,11 +25,12 @@ const GroupForm = () => {
       setError(true);
     } else {
       const id = list.length + 1;
+      const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
       setList((prev) => [
         ...prev,
         {
           id: id,
-          task: name,
+          task: capitalizedName,
         },
       ]);
       setName("");
@@ -64,7 +65,7 @@ const GroupForm = () => {
     const form = event.target;
     const groupName = form.groupName.value;
     const friendsList = list.map((item) => item.task);
-    if (friendsList.length === 0) {
+    if (friendsList.length <= 1 && group.length === 0) {
       setError(true);
       return;
     }
@@ -73,7 +74,7 @@ const GroupForm = () => {
       await postData(groupName, friendsList);
       setRedirecting(true);
       setTimeout(() => {
-        navigate("/payment");
+        navigate('/payment');
       }, 1000); 
     } catch (error) {
       console.error(error);
@@ -82,19 +83,20 @@ const GroupForm = () => {
 
   return (
     <div>
-      <Navbar />
+      <AccountMenu />
       <div className="full_groupForm">
         <form className="groupForm" onSubmit={handleSubmit}>
           <h2 className="groupNameLabel">Group Name</h2>
           <TextField
-            required
             id="filled-required"
             label="Enter Your Group name"
             className="groupName"
             name="groupName"
             variant="filled"
           />
-
+          {error && (
+            <p className="error">Please enter group name.</p>
+          )}
           <h2 className="title">Add Friends</h2>
           <div className="inputContainer">
             <TextField
@@ -125,7 +127,7 @@ const GroupForm = () => {
                 className="chipName"
                 key={nameList.id}
                 label={nameList.task}
-                onClick={() => handleDelete(nameList.id)}
+                onDelete={() => handleDelete(nameList.id)}
               />
             ))}
           </div>
@@ -138,7 +140,7 @@ const GroupForm = () => {
             Create Group
           </Button>
           
-          {redirecting && (
+          {loading && redirecting && (
             <Backdrop open={true}>
               <CircularProgress color="inherit" />
             </Backdrop>
@@ -150,9 +152,3 @@ const GroupForm = () => {
 };
 
 export default GroupForm;
-
-
-
-
-
-

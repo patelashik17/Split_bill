@@ -1,6 +1,6 @@
 import "./App.css";
 import Router from "./Component/Router/Router";
-function App() {
+const App=()=> {
   return (
     <>
       <Router />
