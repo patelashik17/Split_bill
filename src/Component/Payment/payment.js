@@ -1,60 +1,68 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Snackbar from "@mui/material/Snackbar";
-import "./payment.css";   
-import AccountMenu from "../Account_Menu/account_menu";
+import React, { useCallback, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setError,
+  setChildList,
+  setInputAmount,
+  setInputTitle,
+  setIsSuccess,
+  setSelectedOption,
+} from "../Payment/redux/action/action";
+import { Button, Snackbar, TextField } from "@mui/material";
+import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import Box from "@mui/material/Box";
+
+import AccountMenu from "../Account_Menu/account_menu";
+import "./payment.css";
 
 const url = "https://split-bill-e6dd6-default-rtdb.firebaseio.com/split.json";
 
 const Payment = () => {
-  const [childList, setChildList] = useState([]);
-  const [selectedOption, setSelectedOption] = useState("");
-  const [inputTitle, setInputTitle] = useState("");
-  const [inputAmount, setInputAmount] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(false); 
+  const selectedOption = useSelector((state) => state.payment.selectedOption);
+  const error = useSelector((state) => state.payment.error);
+  const childList = useSelector((state) => state.payment.childList);
+  const inputAmount = useSelector((state) => state.payment.inputAmount);
+  const inputTitle = useSelector((state) => state.payment.inputTitle);
+  const isSuccess = useSelector((state) => state.payment.isSuccess);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const dispatch = useDispatch();
 
-  const fetchData = useCallback (async () => {
+  const fetchData = useCallback(async () => {
     try {
       const response = await fetch(url);
       const data = await response.json();
       console.log(data);
       if (data) {
         const childValue = data[Object.keys(data)[0]];
-        console.log(childValue);
-        setChildList(childValue.friendsList);
+        console.log("child", childValue);
+        dispatch(setChildList(childValue.friendsList));
+        console.log(childValue.friendsList);
       } else {
         console.log("No data found");
       }
-    } catch (error) {     
+    } catch (error) {
       console.log("Error fetching data:", error);
     }
-  },[childList]);
+  }, [dispatch]);
 
-  const memoizeFetchData=useMemo(()=>fetchData,[fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleDropdown = (event) => {
-    setSelectedOption(event.target.value);
+    dispatch(setSelectedOption(event.target.value));
   };
 
   const handleInputTitle = (event) => {
-    setInputTitle(event.target.value);
+    dispatch(setInputTitle(event.target.value));
   };
 
   const handleInputAmount = (event) => {
-    setInputAmount(event.target.value);
+    dispatch(setInputAmount(event.target.value));
   };
-
   const addPaymentValue = async (event) => {
     event.preventDefault();
 
@@ -63,8 +71,8 @@ const Payment = () => {
       inputAmount.trim() === "" ||
       !selectedOption
     ) {
-      setErrorMessage(true);
-      setIsSuccess(false);
+      dispatch(setError(true));
+      dispatch(setIsSuccess(false));
       return;
     }
 
@@ -82,19 +90,13 @@ const Payment = () => {
       });
       const data = await response.json();
       if (data) {
-        const newUser = {
-          id: data.id,
-          inputTitle,  
-          inputAmount,
-          selectedOption,
-        };
-        setInputTitle("");
-        setInputAmount("");    
-        setSelectedOption("");
-        setIsSuccess(true);  
-        setErrorMessage(false);
+        dispatch(setInputTitle(""));
+        dispatch(setInputAmount(""));
+        dispatch(setSelectedOption(""));
+        dispatch(setIsSuccess(true));
+        dispatch(setError(false));
       }
-    } catch (error) {  
+    } catch (error) {
       console.error(error);
     }
   };
@@ -106,18 +108,20 @@ const Payment = () => {
         <form className="paymentform" onSubmit={addPaymentValue}>
           <div>
             <p className="payer">Payer</p>
-            <Box sx={{ minWidth: 120, backgroundColor: "white", ml: "-6rem" }}>
+            <Box
+              sx={{ minWidth: 120, backgroundColor: "white", ml: "-6rem" }}
+              className="box-payment"
+            >
               <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Name</InputLabel>
                 <Select
                   labelId="demo-simple-select-label"
+                  id="demo-simple-select"
                   value={selectedOption}
                   label="Name"
-                  name="option"
-                  id="option"
                   onChange={handleDropdown}
                 >
-                  {childList.length > 0 &&
+                  {childList?.length > 0 &&
                     childList.map((friend) => (
                       <MenuItem key={friend} value={friend}>
                         {friend}
@@ -150,19 +154,15 @@ const Payment = () => {
             />
           </div>
           <div>
-            {errorMessage && <p className="errormsg">Fills are fields</p>}
-            <Button
-              variant="contained"
-              type="submit"
-              sx={{ mt: 5 }}
-            >
+            {error && <p className="errormsg">Fill all fields</p>}
+            <Button variant="contained" type="submit" sx={{ mt: 5 }}>
               Payment
             </Button>
             {isSuccess && (
               <Snackbar
                 open={isSuccess}
                 autoHideDuration={3000}
-                onClose={() => setIsSuccess(false)}
+                onClose={() => dispatch(setIsSuccess(false))}
                 message="Data is added"
               />
             )}

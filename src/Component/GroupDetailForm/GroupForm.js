@@ -7,32 +7,35 @@ import "./GroupForm.css";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import AccountMenu from "../Account_Menu/account_menu";
-import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import { useSelector, useDispatch } from "react-redux";
+import { addFriend, removeFriend } from "./redux/action/action";
+import { v4 as uuidv4 } from "uuid";
 
 const GroupForm = () => {
-  const [group, setGroup] = useState([]);
+  const [group, setGroup] = useState("");
   const [name, setName] = useState("");
-  const [list, setList] = useState([]);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [redirecting, setRedirecting] = useState(false); 
-
+  const {
+    error,
+    loading,
+    redirecting,
+    errorMessage,
+    groupNameError,
+    groupNameErrorMessage,
+  } = useSelector((state) => state.group);
+  const list = useSelector((state) => state.group.list);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleClick = () => {
-    if (name.trim() === "") {
-      setError(true);
+    if (name.trim().length === 0) {
+      return null;
     } else {
-      const id = list.length + 1;
+      const id = uuidv4();
       const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
-      setList((prev) => [
-        ...prev,
-        {
-          id: id,
-          task: capitalizedName,
-        },
-      ]);
+      dispatch(addFriend({ friendId: id, task: capitalizedName }));
+      console.log(addFriend);
       setName("");
     }
   };
@@ -56,26 +59,32 @@ const GroupForm = () => {
     }
   };
 
-  const handleDelete = (id) => {
-    setList((prev) => prev.filter((item) => item.id !== id));
+  const handleDelete = (friendId) => {
+    dispatch(removeFriend(friendId));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.target;
     const groupName = form.groupName.value;
-    const friendsList = list.map((item) => item.task);
-    if (friendsList.length <= 1 && group.length === 0) {
-      setError(true);
-      return;
+    const friendsList = list?.map((item) => item.task);
+    if (name.trim() === "") {
+      dispatch({ type: "SET_ERROR_MESSAGE", payload: "Enter group name" });
     }
-    setLoading(true);
+    if (friendsList.length <= 1 && group.length === 0) {
+      dispatch({ type: "SET_ERROR", payload: "Enter two Friend Name" });
+      return null;
+    }
+    dispatch({ type: "SET_LOADING", payload: "true" });
     try {
       await postData(groupName, friendsList);
-      setRedirecting(true);
-      setTimeout(() => {
-        navigate('/payment');
-      }, 1000); 
+      if (friendsList.length > 1 && group.trim().length > 1) {
+        // Only redirect if the friend list is valid
+        dispatch({ type: "SET_REDIRECTING", payload: "true" });
+        setTimeout(() => {
+          navigate("/payment");
+        }, 1000);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -92,11 +101,12 @@ const GroupForm = () => {
             label="Enter Your Group name"
             className="groupName"
             name="groupName"
-            variant="filled"
+            variant="outlined"
+            onChange={(e) => setGroup(e.target.value)}
           />
-          {error && (
-            <p className="error">Please enter group name.</p>
-          )}
+          {groupNameError ? (
+            <p className="error">{groupNameErrorMessage}</p>
+          ) : null}
           <h2 className="title">Add Friends</h2>
           <div className="inputContainer">
             <TextField
@@ -118,16 +128,14 @@ const GroupForm = () => {
               </Fab>
             </span>
           </div>
-          {error && (
-            <p className="error">Please enter at least one friend's name.</p>
-          )}
+          {error ? <p className="error">{errorMessage}</p> : null}
           <div className="chipContainer">
-            {list.map((nameList) => (
+            {list?.map((nameList) => (
               <Chip
                 className="chipName"
-                key={nameList.id}
+                key={nameList.friendId}
                 label={nameList.task}
-                onDelete={() => handleDelete(nameList.id)}
+                onDelete={() => handleDelete(nameList.friendId)}
               />
             ))}
           </div>
@@ -139,7 +147,7 @@ const GroupForm = () => {
           >
             Create Group
           </Button>
-          
+
           {loading && redirecting && (
             <Backdrop open={true}>
               <CircularProgress color="inherit" />

@@ -29,8 +29,8 @@ const Login = () => {
     validationSchema: validationSchema,
     onSubmit: (values) => {
       setIsSubmitted(true);
-      const maths=Math.floor(Math.random()*10000);
-      localStorage.setItem("token",maths);
+      const maths = Math.floor(Math.random() * 10000);
+      localStorage.setItem("token", maths);
     },
   });
 

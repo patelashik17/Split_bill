@@ -89,24 +89,25 @@ const Landing = () => {
         );
         let debtor = sorted[0];
         let creditor = sorted[sorted.length - 1];
+        if (debtor && creditor) {
+          let amountToSettle = Math.min(
+            Math.abs(debtor.receivedAmount),
+            Math.abs(creditor.receivedAmount)
+          );
 
-        let amountToSettle = Math.min(
-          Math.abs(debtor.receivedAmount),
-          Math.abs(creditor.receivedAmount)
-        );
+          updatedWhoPaidWho.push(
+            debtor.name +
+              " should give to " +
+              creditor.name +
+              " this much: " +
+              Math.floor(amountToSettle)
+          );
 
-        updatedWhoPaidWho.push(
-          debtor.name +
-            " should give to " +
-            creditor.name +
-            " this much: " +
-            Math.floor(amountToSettle)
-        );
+          debtor.receivedAmount += amountToSettle;
+          creditor.receivedAmount -= amountToSettle;
 
-        debtor.receivedAmount += amountToSettle;
-        creditor.receivedAmount -= amountToSettle;
-
-        loopCount++;
+          loopCount++;
+        }
       }
     } while (remainingAmount !== 0 && loopCount < maxLoopCount);
 
@@ -131,24 +132,20 @@ const Landing = () => {
             <tr>
               <td>Friend Name</td>
               <td>Amount Given</td>
-              <td>Amount Received</td>
             </tr>
           </thead>
           <tbody>
-            {userBalances.map((balance) => (
+            {userBalances?.map((balance) => (
               <tr key={balance.name} className="row">
                 <td>{balance.name}</td>
                 <td>{balance.amount > 0 ? balance.amount : 0}</td>
-                <td>
-                  {balance.receivedAmount > 0 ? balance.receivedAmount : 0}
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <div className="mini_box">
-        {whoPaidWho.map((result, index) => (
+        {whoPaidWho?.map((result, index) => (
           <p key={index}>{result}</p>
         ))}
       </div>
