@@ -1,0 +1,15 @@
+.MuiBox-root {
+    background-color: lightskyblue;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+}
+
+.navbar_nav {
+    display: flex;
+}
+
+.avatar {
+    display: flex;
+    justify-content: flex-end;
+}
