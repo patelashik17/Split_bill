@@ -4,13 +4,18 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import "./AddFriends.css";
 
+interface Friend {
+  id: number;
+  task: string;
+}
+
 const AddFriends = () => {
   const [name, setName] = useState("");
-  const [list, setList] = useState([]);
+  const [list, setList] = useState<Friend[]>([]);
 
   const handleClick = () => {
     const id = list.length + 1;
-    setList((prev) => [
+    setList((prev: Friend[]) => [
       ...prev,
       {
         id: id,
@@ -20,18 +25,18 @@ const AddFriends = () => {
     setName("");
   };
 
-  const handleDelete = (id) => {
-    setList((prev) => prev.filter((item) => item.id !== id));
+  const handleDelete = (id: number) => {
+    setList((prev: Friend[]) => prev.filter((item) => item.id !== id));
   };
 
   return (
     <>
-      <p className={classes.title}>Add Friends</p>
+      <p className="title">Add Friends</p>
       <TextField
         id="outlined-basic"
         label="Add"
         variant="outlined"
-        className={classes.addfriends}
+        className="addfriends"
         value={name}
         onChange={(e) => setName(e.target.value)}
         sx={{ mt: 2 }}
@@ -39,7 +44,7 @@ const AddFriends = () => {
       <span>
         <Button
           variant="contained"
-          className={classes.add}
+          className="add"
           size="small"
           onClick={handleClick}
           sx={{ ml: 1, mt: 2 }}
